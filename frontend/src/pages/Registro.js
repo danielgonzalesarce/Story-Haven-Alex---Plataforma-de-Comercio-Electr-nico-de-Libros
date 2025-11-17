@@ -79,7 +79,7 @@ const Registro = () => {
           <div className="card shadow">
             <div className="card-body p-5">
               <h2 className="card-title text-center mb-4">Registro de Usuario</h2>
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit} autoComplete="off">
                 <div className="row">
                   <div className="col-md-6 mb-3">
                     <label htmlFor="username" className="form-label">
@@ -93,6 +93,9 @@ const Registro = () => {
                       value={formData.username}
                       onChange={handleChange}
                       required
+                      autoComplete="off"
+                      autoCapitalize="off"
+                      autoCorrect="off"
                     />
                   </div>
                   <div className="col-md-6 mb-3">
@@ -107,6 +110,7 @@ const Registro = () => {
                       value={formData.email}
                       onChange={handleChange}
                       required
+                      autoComplete="off"
                     />
                   </div>
                 </div>
@@ -122,6 +126,9 @@ const Registro = () => {
                       name="first_name"
                       value={formData.first_name}
                       onChange={handleChange}
+                      autoComplete="off"
+                      autoCapitalize="off"
+                      autoCorrect="off"
                     />
                   </div>
                   <div className="col-md-6 mb-3">
@@ -135,6 +142,9 @@ const Registro = () => {
                       name="last_name"
                       value={formData.last_name}
                       onChange={handleChange}
+                      autoComplete="off"
+                      autoCapitalize="off"
+                      autoCorrect="off"
                     />
                   </div>
                 </div>
@@ -151,6 +161,7 @@ const Registro = () => {
                       value={formData.password}
                       onChange={handleChange}
                       required
+                      autoComplete="new-password"
                     />
                   </div>
                   <div className="col-md-6 mb-3">
@@ -165,6 +176,7 @@ const Registro = () => {
                       value={formData.password2}
                       onChange={handleChange}
                       required
+                      autoComplete="new-password"
                     />
                   </div>
                 </div>

@@ -33,14 +33,24 @@ def registro_usuario(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_usuario(request):
-    """Login de usuario"""
+    """Login de usuario - acepta username o email"""
     from django.contrib.auth import authenticate
     
-    username = request.data.get('username')
+    username_or_email = request.data.get('username')
     password = request.data.get('password')
     
-    if username and password:
-        user = authenticate(username=username, password=password)
+    if username_or_email and password:
+        # Intentar autenticar primero con username
+        user = authenticate(username=username_or_email, password=password)
+        
+        # Si no funciona, intentar con email
+        if not user:
+            try:
+                user_obj = User.objects.get(email=username_or_email)
+                user = authenticate(username=user_obj.username, password=password)
+            except User.DoesNotExist:
+                user = None
+        
         if user:
             refresh = RefreshToken.for_user(user)
             return Response({
@@ -49,7 +59,7 @@ def login_usuario(request):
                 'access': str(refresh.access_token),
             }, status=status.HTTP_200_OK)
         return Response({'error': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
-    return Response({'error': 'Se requiere username y password'}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({'error': 'Se requiere username/email y password'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CategoriaViewSet(viewsets.ReadOnlyModelViewSet):

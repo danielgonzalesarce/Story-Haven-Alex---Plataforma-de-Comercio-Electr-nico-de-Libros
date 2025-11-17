@@ -54,10 +54,10 @@ const Login = () => {
           <div className="card shadow">
             <div className="card-body p-5">
               <h2 className="card-title text-center mb-4">Iniciar Sesión</h2>
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit} autoComplete="off">
                 <div className="mb-3">
                   <label htmlFor="username" className="form-label">
-                    Usuario
+                    Usuario o Email
                   </label>
                   <input
                     type="text"
@@ -67,6 +67,10 @@ const Login = () => {
                     value={formData.username}
                     onChange={handleChange}
                     required
+                    placeholder="Ingresa tu usuario o correo electrónico"
+                    autoComplete="off"
+                    autoCapitalize="off"
+                    autoCorrect="off"
                   />
                 </div>
                 <div className="mb-3">
@@ -81,6 +85,7 @@ const Login = () => {
                     value={formData.password}
                     onChange={handleChange}
                     required
+                    autoComplete="new-password"
                   />
                 </div>
                 <button

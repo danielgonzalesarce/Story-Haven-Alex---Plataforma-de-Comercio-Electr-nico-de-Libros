@@ -96,6 +96,17 @@ const DetalleProducto = () => {
           </p>
           <p className="lead mb-4">{producto.descripcion}</p>
 
+          {producto.contraportada && (
+            <div className="mb-4">
+              <h4 className="mb-3">Sobre este libro</h4>
+              <div className="card bg-light border-0 p-4">
+                <p className="mb-0" style={{ lineHeight: '1.8', fontSize: '1.05rem' }}>
+                  {producto.contraportada}
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="mb-4">
             <h2 className="text-primary">${parseFloat(producto.precio).toFixed(2)}</h2>
             <p className="text-muted">

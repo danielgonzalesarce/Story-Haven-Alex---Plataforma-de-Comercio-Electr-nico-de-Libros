@@ -51,3 +51,18 @@ export const checkout = async () => {
   return response.data;
 };
 
+/**
+ * Obtiene el número total de items en el carrito
+ */
+export const getCarritoItemCount = async () => {
+  try {
+    const data = await getCarrito();
+    const itemsArray = Array.isArray(data) ? data : (data.results || []);
+    // Sumar las cantidades de todos los items
+    return itemsArray.reduce((total, item) => total + (item.cantidad || 1), 0);
+  } catch (error) {
+    console.error('Error obteniendo cantidad del carrito:', error);
+    return 0;
+  }
+};
+

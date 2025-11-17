@@ -8,6 +8,8 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import DetalleProducto from './pages/DetalleProducto';
 import Carrito from './pages/Carrito';
+import Favoritos from './pages/Favoritos';
+import Acceder from './pages/Acceder';
 import Login from './pages/Login';
 import Registro from './pages/Registro';
 
@@ -22,8 +24,11 @@ function App() {
             <Navbar />
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/categoria/:categoriaId" element={<Home />} />
               <Route path="/producto/:id" element={<DetalleProducto />} />
               <Route path="/carrito" element={<Carrito />} />
+              <Route path="/favoritos" element={<Favoritos />} />
+              <Route path="/acceder" element={<Acceder />} />
               <Route path="/login" element={<Login />} />
               <Route path="/registro" element={<Registro />} />
             </Routes>

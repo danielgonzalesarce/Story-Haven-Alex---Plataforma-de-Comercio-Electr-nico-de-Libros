@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { getProductos, getCategorias } from '../services/productService';
 import ProductCard from '../components/ProductCard';
 import Notification from '../components/Notification';
 
 const Home = () => {
+  const { categoriaId } = useParams(); // Obtener el ID de categoría de la URL
   const [productos, setProductos] = useState([]);
   const [productosDestacados, setProductosDestacados] = useState([]);
   const [categorias, setCategorias] = useState([]);
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingDestacados, setLoadingDestacados] = useState(true);
+  const [loadingCategorias, setLoadingCategorias] = useState(true);
   const [filtros, setFiltros] = useState({
-    categoria: '',
     precio_min: '',
     precio_max: '',
     search: '',
@@ -24,26 +26,51 @@ const Home = () => {
 
   useEffect(() => {
     loadCategorias();
-    loadProductosDestacados();
-    loadProductos();
+    if (!categoriaId) {
+      loadProductosDestacados();
+      loadProductos();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (mostrarFiltros) {
+    // Si hay un categoriaId en la URL, encontrar la categoría seleccionada
+    if (categoriaId && categorias.length > 0) {
+      const categoria = categorias.find(cat => cat.id === parseInt(categoriaId));
+      setCategoriaSeleccionada(categoria);
+      setMostrarFiltros(true); // Mostrar filtros automáticamente cuando hay categoría seleccionada
+      loadProductos();
+    } else if (!categoriaId) {
+      setCategoriaSeleccionada(null);
+      setMostrarFiltros(false); // Ocultar filtros cuando no hay categoría
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoriaId, categorias]);
+
+  useEffect(() => {
+    if (mostrarFiltros || categoriaId) {
       loadProductos();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtros.categoria, filtros.precio_min, filtros.precio_max, filtros.search, filtros.ordering, mostrarFiltros]);
+  }, [filtros.precio_min, filtros.precio_max, filtros.search, filtros.ordering, mostrarFiltros, categoriaId]);
 
   const loadCategorias = async () => {
+    setLoadingCategorias(true);
     try {
       const data = await getCategorias();
       const categoriasArray = Array.isArray(data) ? data : (data.results || []);
       setCategorias(categoriasArray);
+      
+      // Si hay categoriaId en la URL, encontrar la categoría
+      if (categoriaId) {
+        const categoria = categoriasArray.find(cat => cat.id === parseInt(categoriaId));
+        setCategoriaSeleccionada(categoria);
+      }
     } catch (error) {
       console.error('Error cargando categorías:', error);
       setCategorias([]);
+    } finally {
+      setLoadingCategorias(false);
     }
   };
 
@@ -65,6 +92,10 @@ const Home = () => {
     setLoading(true);
     try {
       const params = url ? {} : { ...filtros };
+      // Si hay categoriaId en la URL, agregarlo a los parámetros
+      if (categoriaId && !url) {
+        params.categoria = categoriaId;
+      }
       const data = url
         ? await fetch(url, {
             headers: {
@@ -98,7 +129,6 @@ const Home = () => {
 
   const clearFilters = () => {
     setFiltros({
-      categoria: '',
       precio_min: '',
       precio_max: '',
       search: '',
@@ -123,8 +153,9 @@ const Home = () => {
         />
       )}
 
-      {/* Hero Section - Bienvenida */}
-      <section className="hero-section">
+      {/* Hero Section - Solo mostrar si no hay categoría seleccionada */}
+      {!categoriaId && (
+        <section className="hero-section">
         <div className="container">
           <div className="row align-items-center min-vh-50">
             <div className="col-lg-6">
@@ -153,9 +184,11 @@ const Home = () => {
           </div>
         </div>
       </section>
+      )}
 
-      {/* Historia Section */}
-      <section className="historia-section py-5">
+      {/* Historia Section - Solo mostrar si no hay categoría seleccionada */}
+      {!categoriaId && (
+        <section className="historia-section py-5">
         <div className="container">
           <div className="row justify-content-center">
             <div className="col-lg-8 text-center">
@@ -183,9 +216,11 @@ const Home = () => {
           </div>
         </div>
       </section>
+      )}
 
-      {/* Productos Destacados */}
-      <section className="destacados-section py-5">
+      {/* Productos Destacados - Solo mostrar si no hay categoría seleccionada */}
+      {!categoriaId && (
+        <section className="destacados-section py-5">
         <div className="container">
           <div className="row mb-4">
             <div className="col-12 text-center">
@@ -214,32 +249,56 @@ const Home = () => {
           )}
         </div>
       </section>
+      )}
 
       {/* Sección de Productos Completa */}
       <section id="seccion-productos" className="productos-section py-5">
         <div className="container">
           <div className="row mb-4">
             <div className="col-12 text-center">
-              <h2 className="section-title">Nuestro Catálogo Completo</h2>
-              <p className="section-subtitle">Explora todos nuestros productos</p>
-              <button
-                className="btn btn-outline-primary mt-3"
-                onClick={() => setMostrarFiltros(!mostrarFiltros)}
-              >
-                {mostrarFiltros ? 'Ocultar Filtros' : 'Mostrar Filtros'}
-              </button>
+              {categoriaSeleccionada ? (
+                <>
+                  <h2 className="section-title">Productos de {categoriaSeleccionada.nombre}</h2>
+                  <p className="section-subtitle">
+                    {categoriaSeleccionada.descripcion || `Explora todos los productos de ${categoriaSeleccionada.nombre}`}
+                  </p>
+                  <div className="mt-3">
+                    <Link to="/" className="btn btn-outline-secondary me-2">
+                      <i className="fas fa-arrow-left me-2"></i>Ver Todas las Categorías
+                    </Link>
+                    <button
+                      className="btn btn-outline-primary"
+                      onClick={() => setMostrarFiltros(!mostrarFiltros)}
+                    >
+                      <i className="fas fa-filter me-2"></i>
+                      {mostrarFiltros ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2 className="section-title">Nuestro Catálogo Completo</h2>
+                  <p className="section-subtitle">Explora todos nuestros productos</p>
+                  <button
+                    className="btn btn-outline-primary mt-3"
+                    onClick={() => setMostrarFiltros(!mostrarFiltros)}
+                  >
+                    {mostrarFiltros ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
-          {/* Filtros */}
-          {mostrarFiltros && (
+          {/* Filtros - Siempre mostrar si hay categoría seleccionada */}
+          {(mostrarFiltros || categoriaId) && (
             <div className="card mb-4 shadow-sm">
               <div className="card-body">
                 <h5 className="card-title mb-4">
                   <i className="fas fa-filter me-2"></i>Filtros de Búsqueda
                 </h5>
                 <div className="row g-3">
-                  <div className="col-md-3">
+                  <div className="col-md-4">
                     <label className="form-label">Buscar</label>
                     <input
                       type="text"
@@ -251,22 +310,6 @@ const Home = () => {
                     />
                   </div>
                   <div className="col-md-3">
-                    <label className="form-label">Categoría</label>
-                    <select
-                      className="form-select"
-                      name="categoria"
-                      value={filtros.categoria}
-                      onChange={handleFilterChange}
-                    >
-                      <option value="">Todas</option>
-                      {Array.isArray(categorias) && categorias.map((cat) => (
-                        <option key={cat.id} value={cat.id}>
-                          {cat.nombre}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="col-md-2">
                     <label className="form-label">Precio Mín</label>
                     <input
                       type="number"
@@ -277,7 +320,7 @@ const Home = () => {
                       placeholder="0"
                     />
                   </div>
-                  <div className="col-md-2">
+                  <div className="col-md-3">
                     <label className="form-label">Precio Máx</label>
                     <input
                       type="number"

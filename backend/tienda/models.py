@@ -20,6 +20,7 @@ class Producto(models.Model):
     nombre = models.CharField(max_length=200)
     autor = models.CharField(max_length=200)
     descripcion = models.TextField()
+    contraportada = models.TextField(blank=True, null=True, help_text="Descripción detallada del libro para la contraportada")
     precio = models.DecimalField(max_digits=10, decimal_places=2)
     imagen = models.CharField(max_length=255, help_text="Nombre del archivo de imagen")
     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, related_name='productos')
