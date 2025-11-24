@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { getProductos, getCategorias } from '../services/productService';
 import ProductCard from '../components/ProductCard';
 import Notification from '../components/Notification';
 
 const Home = () => {
   const { categoriaId } = useParams(); // Obtener el ID de categoría de la URL
+  const queryClient = useQueryClient();
   const [productos, setProductos] = useState([]);
   const [productosDestacados, setProductosDestacados] = useState([]);
   const [categorias, setCategorias] = useState([]);
@@ -23,6 +25,18 @@ const Home = () => {
   const [prevPage, setPrevPage] = useState(null);
   const [notification, setNotification] = useState(null);
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
+
+  // Prefetch producto al pasar el mouse
+  const handleProductoHover = (productoId) => {
+    queryClient.prefetchQuery({
+      queryKey: ['producto', productoId],
+      queryFn: async () => {
+        const { getProducto } = await import('../services/productService');
+        return await getProducto(productoId);
+      },
+      staleTime: 5 * 60 * 1000,
+    });
+  };
 
   useEffect(() => {
     loadCategorias();
@@ -237,7 +251,11 @@ const Home = () => {
           ) : productosDestacados.length > 0 ? (
             <div className="row g-4">
               {productosDestacados.map((producto) => (
-                <div key={producto.id} className="col-md-6 col-lg-3">
+                <div
+                  key={producto.id}
+                  className="col-md-6 col-lg-3"
+                  onMouseEnter={() => handleProductoHover(producto.id)}
+                >
                   <ProductCard producto={producto} />
                 </div>
               ))}
@@ -370,7 +388,11 @@ const Home = () => {
             <>
               <div className="row g-4">
                 {productos.map((producto) => (
-                  <div key={producto.id} className="col-md-4 col-lg-3">
+                  <div
+                    key={producto.id}
+                    className="col-md-4 col-lg-3"
+                    onMouseEnter={() => handleProductoHover(producto.id)}
+                  >
                     <ProductCard producto={producto} />
                   </div>
                 ))}

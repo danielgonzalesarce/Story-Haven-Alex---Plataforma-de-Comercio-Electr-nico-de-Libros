@@ -1,71 +1,195 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getCarrito, removeFromCarrito, checkout } from '../services/cartService';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getCarrito, removeFromCarrito, updateCarritoItem, checkout } from '../services/cartService';
 import Notification from '../components/Notification';
 
 const Carrito = () => {
   const navigate = useNavigate();
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [notification, setNotification] = useState(null);
-  const [total, setTotal] = useState(0);
 
-  useEffect(() => {
-    loadCarrito();
-  }, []);
-
-  const loadCarrito = async () => {
-    setLoading(true);
-    try {
+  // Query para obtener el carrito
+  const { data: carritoData, isLoading, error } = useQuery({
+    queryKey: ['carrito'],
+    queryFn: async () => {
       const data = await getCarrito();
-      const itemsArray = Array.isArray(data) ? data : data.results || [];
-      setItems(itemsArray);
-      calculateTotal(itemsArray);
-    } catch (error) {
-      console.error('Error cargando carrito:', error);
-      setNotification({ message: 'Error al cargar el carrito', type: 'error' });
-    } finally {
-      setLoading(false);
-    }
-  };
+      return Array.isArray(data) ? data : (data.results || []);
+    },
+  });
 
-  const calculateTotal = (itemsArray) => {
-    const totalCalculado = itemsArray.reduce((sum, item) => {
-      return sum + parseFloat(item.subtotal);
-    }, 0);
-    setTotal(totalCalculado);
-  };
+  const items = carritoData || [];
+  const total = items.reduce((sum, item) => sum + parseFloat(item.subtotal || 0), 0);
 
-  const handleRemove = async (itemId) => {
-    try {
+  // Mutación para eliminar item con optimistic update
+  const deleteMutation = useMutation({
+    mutationFn: async (itemId) => {
       await removeFromCarrito(itemId);
-      setNotification({ message: 'Producto eliminado del carrito', type: 'success' });
-      loadCarrito();
-    } catch (error) {
-      console.error('Error eliminando del carrito:', error);
-      setNotification({ message: 'Error al eliminar del carrito', type: 'error' });
-    }
-  };
+    },
+    onMutate: async (itemId) => {
+      // Cancelar queries en curso
+      await queryClient.cancelQueries({ queryKey: ['carrito'] });
 
-  const handleCheckout = async () => {
-    try {
-      const response = await checkout();
+      // Snapshot del valor anterior
+      const previousItems = queryClient.getQueryData(['carrito']);
+
+      // Optimistic update
+      queryClient.setQueryData(['carrito'], (old) => {
+        return old.filter((item) => item.id !== itemId);
+      });
+
+      return { previousItems };
+    },
+    onError: (err, itemId, context) => {
+      // Rollback en caso de error
+      if (context?.previousItems) {
+        queryClient.setQueryData(['carrito'], context.previousItems);
+      }
       setNotification({
-        message: response.message || 'Funcionalidad de compra actualmente en desarrollo',
+        message: 'Error al eliminar el producto del carrito',
+        type: 'error',
+      });
+    },
+    onSuccess: () => {
+      setNotification({
+        message: 'Producto eliminado del carrito',
+        type: 'success',
+      });
+    },
+    onSettled: () => {
+      // Invalidar y refetch
+      queryClient.invalidateQueries({ queryKey: ['carrito'] });
+    },
+  });
+
+  // Mutación para actualizar cantidad con optimistic update
+  const updateQuantityMutation = useMutation({
+    mutationFn: async ({ itemId, cantidad }) => {
+      return await updateCarritoItem(itemId, cantidad);
+    },
+    onMutate: async ({ itemId, cantidad }) => {
+      // Cancelar queries en curso
+      await queryClient.cancelQueries({ queryKey: ['carrito'] });
+
+      // Snapshot del valor anterior
+      const previousItems = queryClient.getQueryData(['carrito']);
+
+      // Optimistic update
+      queryClient.setQueryData(['carrito'], (old) => {
+        return old.map((item) =>
+          item.id === itemId
+            ? {
+                ...item,
+                cantidad: cantidad,
+                subtotal: parseFloat(item.producto.precio) * cantidad,
+              }
+            : item
+        );
+      });
+
+      return { previousItems };
+    },
+    onError: (err, variables, context) => {
+      // Rollback en caso de error
+      if (context?.previousItems) {
+        queryClient.setQueryData(['carrito'], context.previousItems);
+      }
+      const errorMessage =
+        err.response?.data?.error || 'Error al actualizar la cantidad';
+      setNotification({
+        message: errorMessage,
+        type: 'error',
+      });
+    },
+    onSuccess: () => {
+      // Invalidar para obtener datos actualizados
+      queryClient.invalidateQueries({ queryKey: ['carrito'] });
+    },
+  });
+
+  // Mutación para checkout
+  const checkoutMutation = useMutation({
+    mutationFn: async () => {
+      return await checkout();
+    },
+    onSuccess: (data) => {
+      setNotification({
+        message: data.message || 'Funcionalidad de compra actualmente en desarrollo',
         type: 'info',
       });
-    } catch (error) {
+    },
+    onError: (error) => {
       const message =
         error.response?.data?.message || 'Funcionalidad de compra actualmente en desarrollo';
-      setNotification({ message, type: 'info' });
+      setNotification({
+        message,
+        type: 'info',
+      });
+    },
+  });
+
+  const handleRemove = (itemId) => {
+    deleteMutation.mutate(itemId);
+  };
+
+  const handleQuantityChange = (itemId, newCantidad) => {
+    if (newCantidad < 1) {
+      setNotification({
+        message: 'La cantidad debe ser al menos 1',
+        type: 'error',
+      });
+      return;
+    }
+    updateQuantityMutation.mutate({ itemId, cantidad: newCantidad });
+  };
+
+  const handleIncrement = (item) => {
+    const newCantidad = item.cantidad + 1;
+    handleQuantityChange(item.id, newCantidad);
+  };
+
+  const handleDecrement = (item) => {
+    const newCantidad = item.cantidad - 1;
+    if (newCantidad >= 1) {
+      handleQuantityChange(item.id, newCantidad);
     }
   };
 
-  if (loading) {
+  const handleCheckout = () => {
+    checkoutMutation.mutate();
+  };
+
+  // Prefetch producto al pasar el mouse
+  const handleProductHover = (productoId) => {
+    queryClient.prefetchQuery({
+      queryKey: ['producto', productoId],
+      queryFn: async () => {
+        const { getProducto } = await import('../services/productService');
+        return await getProducto(productoId);
+      },
+      staleTime: 5 * 60 * 1000,
+    });
+  };
+
+  if (isLoading) {
     return (
       <div className="container my-5 text-center">
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Cargando...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container my-5">
+        <div className="alert alert-danger">
+          <h4>Error al cargar el carrito</h4>
+          <p>{error.message || 'Ocurrió un error al cargar el carrito'}</p>
+          <button className="btn btn-primary" onClick={() => queryClient.invalidateQueries({ queryKey: ['carrito'] })}>
+            Reintentar
+          </button>
         </div>
       </div>
     );
@@ -112,24 +236,63 @@ const Carrito = () => {
                     </div>
                     <div className="col-md-9">
                       <div className="card-body">
-                        <h5 className="card-title">{item.producto.nombre}</h5>
+                        <h5 className="card-title">
+                          <Link
+                            to={`/producto/${item.producto.id}`}
+                            onMouseEnter={() => handleProductHover(item.producto.id)}
+                            style={{ textDecoration: 'none', color: 'inherit' }}
+                          >
+                            {item.producto.nombre}
+                          </Link>
+                        </h5>
                         <p className="card-text text-muted">{item.producto.autor}</p>
                         <p className="card-text">
                           <small className="text-muted">
-                            Cantidad: {item.cantidad} | Precio unitario: $
-                            {parseFloat(item.producto.precio).toFixed(2)}
+                            Precio unitario: ${parseFloat(item.producto.precio).toFixed(2)}
+                            {item.producto.stock !== undefined && (
+                              <> | Stock disponible: {item.producto.stock}</>
+                            )}
                           </small>
                         </p>
                         <div className="d-flex justify-content-between align-items-center">
-                          <h5 className="text-primary mb-0">
-                            Subtotal: ${parseFloat(item.subtotal).toFixed(2)}
-                          </h5>
-                          <button
-                            className="btn btn-danger btn-sm"
-                            onClick={() => handleRemove(item.id)}
-                          >
-                            Eliminar
-                          </button>
+                          <div className="d-flex align-items-center gap-3">
+                            <span className="fw-bold">Cantidad:</span>
+                            <div className="btn-group" role="group">
+                              <button
+                                className="btn btn-outline-secondary btn-sm"
+                                onClick={() => handleDecrement(item)}
+                                disabled={updateQuantityMutation.isPending || item.cantidad <= 1}
+                              >
+                                -
+                              </button>
+                              <span className="btn btn-outline-secondary btn-sm disabled">
+                                {item.cantidad}
+                              </span>
+                              <button
+                                className="btn btn-outline-secondary btn-sm"
+                                onClick={() => handleIncrement(item)}
+                                disabled={
+                                  updateQuantityMutation.isPending ||
+                                  (item.producto.stock !== undefined &&
+                                    item.cantidad >= item.producto.stock)
+                                }
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                          <div className="text-end">
+                            <h5 className="text-primary mb-0">
+                              Subtotal: ${parseFloat(item.subtotal).toFixed(2)}
+                            </h5>
+                            <button
+                              className="btn btn-danger btn-sm mt-2"
+                              onClick={() => handleRemove(item.id)}
+                              disabled={deleteMutation.isPending}
+                            >
+                              {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -152,8 +315,12 @@ const Carrito = () => {
                   <strong className="text-primary fs-4">${total.toFixed(2)}</strong>
                 </div>
                 <hr />
-                <button className="btn btn-primary w-100 mb-2" onClick={handleCheckout}>
-                  Proceder al Checkout
+                <button
+                  className="btn btn-primary w-100 mb-2"
+                  onClick={handleCheckout}
+                  disabled={checkoutMutation.isPending}
+                >
+                  {checkoutMutation.isPending ? 'Procesando...' : 'Proceder al Checkout'}
                 </button>
                 <Link to="/" className="btn btn-outline-secondary w-100">
                   Seguir Comprando
@@ -168,4 +335,3 @@ const Carrito = () => {
 };
 
 export default Carrito;
-

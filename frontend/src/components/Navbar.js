@@ -99,7 +99,7 @@ const Navbar = () => {
             </li>
             <li className="nav-item dropdown">
               <a
-                className={`nav-link nav-link-enhanced dropdown-toggle ${isActive('/categoria') ? 'active' : ''}`}
+                className={`nav-link nav-link-enhanced dropdown-toggle ${isActive('/categoria') || isActive('/categorias') ? 'active' : ''}`}
                 href="#"
                 id="navbarDropdown"
                 role="button"
@@ -110,6 +110,15 @@ const Navbar = () => {
                 <i className="fas fa-th-large me-1"></i>Categorías
               </a>
               <ul className="dropdown-menu" aria-labelledby="navbarDropdown">
+                <li>
+                  <Link 
+                    className={`dropdown-item ${isActive('/categorias') ? 'active' : ''}`} 
+                    to="/categorias"
+                  >
+                    <i className="fas fa-list me-2"></i>Ver Todas las Categorías
+                  </Link>
+                </li>
+                <li><hr className="dropdown-divider" /></li>
                 {loadingCategorias ? (
                   <li>
                     <span className="dropdown-item-text">

@@ -60,3 +60,14 @@ class CarritoItemCreateSerializer(serializers.ModelSerializer):
         model = CarritoItem
         fields = ['producto', 'cantidad']
 
+
+class CarritoItemUpdateSerializer(serializers.ModelSerializer):
+    """Serializer para actualizar solo la cantidad"""
+    class Meta:
+        model = CarritoItem
+        fields = ['cantidad']
+    
+    def validate_cantidad(self, value):
+        if value < 1:
+            raise serializers.ValidationError("La cantidad debe ser al menos 1")
+        return value

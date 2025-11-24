@@ -36,7 +36,19 @@ export const addToCarrito = async (productoId, cantidad = 1) => {
 };
 
 export const removeFromCarrito = async (itemId) => {
-  await api.delete(`/carrito/${itemId}/`);
+  const sessionKey = getSessionKey();
+  await api.delete(`/carrito/${itemId}/`, { 
+    params: { session_key: sessionKey } 
+  });
+};
+
+export const updateCarritoItem = async (itemId, cantidad) => {
+  const sessionKey = getSessionKey();
+  const response = await api.patch(`/carrito/${itemId}/`, 
+    { cantidad: cantidad },
+    { params: { session_key: sessionKey } }
+  );
+  return response.data;
 };
 
 export const getCarritoTotal = async () => {

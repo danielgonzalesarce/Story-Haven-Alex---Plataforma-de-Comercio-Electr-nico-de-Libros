@@ -23,14 +23,32 @@ class ErrorBoundary extends React.Component {
             <p>Ha ocurrido un error. Por favor, recarga la página.</p>
             <button
               className="btn btn-primary"
-              onClick={() => window.location.reload()}
+              onClick={() => {
+                this.setState({ hasError: false, error: null });
+                window.location.reload();
+              }}
             >
               Recargar Página
             </button>
             {this.state.error && (
               <details className="mt-3">
-                <summary>Detalles del error</summary>
-                <pre>{this.state.error.toString()}</pre>
+                <summary style={{ cursor: 'pointer' }}>Detalles del error</summary>
+                <pre style={{ 
+                  background: '#f8f9fa', 
+                  padding: '10px', 
+                  borderRadius: '5px',
+                  marginTop: '10px',
+                  fontSize: '12px',
+                  overflow: 'auto'
+                }}>
+                  {this.state.error.toString()}
+                  {this.state.error.stack && (
+                    <>
+                      {'\n\nStack trace:\n'}
+                      {this.state.error.stack}
+                    </>
+                  )}
+                </pre>
               </details>
             )}
           </div>

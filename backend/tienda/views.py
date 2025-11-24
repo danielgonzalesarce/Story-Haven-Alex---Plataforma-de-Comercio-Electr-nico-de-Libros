@@ -10,7 +10,8 @@ from django.utils.crypto import get_random_string
 from .models import Categoria, Producto, CarritoItem
 from .serializers import (
     RegisterSerializer, UserSerializer, CategoriaSerializer,
-    ProductoSerializer, CarritoItemSerializer, CarritoItemCreateSerializer
+    ProductoSerializer, CarritoItemSerializer, CarritoItemCreateSerializer,
+    CarritoItemUpdateSerializer
 )
 
 
@@ -128,6 +129,8 @@ class CarritoViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'create':
             return CarritoItemCreateSerializer
+        elif self.action in ['update', 'partial_update']:
+            return CarritoItemUpdateSerializer
         return CarritoItemSerializer
 
     def create(self, request, *args, **kwargs):
@@ -136,6 +139,13 @@ class CarritoViewSet(viewsets.ModelViewSet):
         
         producto = serializer.validated_data['producto']
         cantidad = serializer.validated_data.get('cantidad', 1)
+        
+        # Validar cantidad mínima
+        if cantidad < 1:
+            return Response(
+                {'error': 'La cantidad debe ser al menos 1'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         # Obtener o generar session_key para usuarios invitados
         session_key = request.data.get('session_key', None)
@@ -150,8 +160,9 @@ class CarritoViewSet(viewsets.ModelViewSet):
                 defaults={'cantidad': cantidad}
             )
             if not created:
-                carrito_item.cantidad += cantidad
-                carrito_item.save()
+                nueva_cantidad = carrito_item.cantidad + cantidad
+            else:
+                nueva_cantidad = cantidad
         else:
             carrito_item, created = CarritoItem.objects.get_or_create(
                 session_key=session_key,
@@ -159,8 +170,20 @@ class CarritoViewSet(viewsets.ModelViewSet):
                 defaults={'cantidad': cantidad}
             )
             if not created:
-                carrito_item.cantidad += cantidad
-                carrito_item.save()
+                nueva_cantidad = carrito_item.cantidad + cantidad
+            else:
+                nueva_cantidad = cantidad
+        
+        # Validar stock disponible
+        if nueva_cantidad > producto.stock:
+            return Response(
+                {'error': f'Stock insuficiente. Solo hay {producto.stock} unidades disponibles'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if not created:
+            carrito_item.cantidad = nueva_cantidad
+            carrito_item.save()
         
         response_serializer = CarritoItemSerializer(carrito_item)
         headers = self.get_success_headers(response_serializer.data)
@@ -170,6 +193,51 @@ class CarritoViewSet(viewsets.ModelViewSet):
             response_data['session_key'] = session_key
         
         return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
+    
+    def update(self, request, *args, **kwargs):
+        """Actualizar cantidad del item del carrito"""
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        
+        # Validar que el usuario tiene acceso a este item
+        user = request.user
+        session_key = request.query_params.get('session_key', None)
+        
+        if user.is_authenticated:
+            if instance.usuario != user:
+                return Response(
+                    {'error': 'No tienes permiso para modificar este item'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        else:
+            if instance.session_key != session_key:
+                return Response(
+                    {'error': 'No tienes permiso para modificar este item'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        
+        cantidad = serializer.validated_data.get('cantidad', instance.cantidad)
+        
+        # Validar stock disponible
+        if cantidad > instance.producto.stock:
+            return Response(
+                {'error': f'Stock insuficiente. Solo hay {instance.producto.stock} unidades disponibles'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        serializer.save()
+        
+        # Retornar con el serializer completo
+        response_serializer = CarritoItemSerializer(instance)
+        return Response(response_serializer.data)
+    
+    def partial_update(self, request, *args, **kwargs):
+        """Actualización parcial (PATCH)"""
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
 
     @action(detail=False, methods=['get'])
     def total(self, request):
@@ -177,6 +245,29 @@ class CarritoViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         total = sum(item.subtotal for item in queryset)
         return Response({'total': float(total)})
+
+    def destroy(self, request, *args, **kwargs):
+        """Eliminar item del carrito con validación de permisos"""
+        instance = self.get_object()
+        
+        # Validar que el usuario tiene acceso a este item
+        user = request.user
+        session_key = request.query_params.get('session_key', None)
+        
+        if user.is_authenticated:
+            if instance.usuario != user:
+                return Response(
+                    {'error': 'No tienes permiso para eliminar este item'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        else:
+            if instance.session_key != session_key:
+                return Response(
+                    {'error': 'No tienes permiso para eliminar este item'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        
+        return super().destroy(request, *args, **kwargs)
 
     @action(detail=False, methods=['post'])
     def checkout(self, request):
