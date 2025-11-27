@@ -7,11 +7,11 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.utils.crypto import get_random_string
 
-from .models import Categoria, Producto, CarritoItem
+from .models import Categoria, Producto, CarritoItem, Compra, CompraItem
 from .serializers import (
-    RegisterSerializer, UserSerializer, CategoriaSerializer,
-    ProductoSerializer, CarritoItemSerializer, CarritoItemCreateSerializer,
-    CarritoItemUpdateSerializer
+    RegisterSerializer, UserSerializer, UserUpdateSerializer, ChangePasswordSerializer,
+    CategoriaSerializer, ProductoSerializer, CarritoItemSerializer, CarritoItemCreateSerializer,
+    CarritoItemUpdateSerializer, CompraSerializer, CompraCreateSerializer, CompraItemSerializer
 )
 
 
@@ -271,7 +271,131 @@ class CarritoViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def checkout(self, request):
-        """Mensaje de checkout en desarrollo"""
+        """Procesar checkout y crear compra"""
+        if not request.user.is_authenticated:
+            return Response(
+                {'error': 'Debes estar autenticado para realizar una compra'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        # Obtener items del carrito del usuario
+        carrito_items = CarritoItem.objects.filter(usuario=request.user)
+        
+        if not carrito_items.exists():
+            return Response(
+                {'error': 'Tu carrito está vacío'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Calcular total
+        total = sum(item.subtotal for item in carrito_items)
+        
+        # Validar stock antes de crear la compra
+        for item in carrito_items:
+            if item.cantidad > item.producto.stock:
+                return Response(
+                    {'error': f'Stock insuficiente para {item.producto.nombre}. Solo hay {item.producto.stock} unidades disponibles'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        # Obtener método de pago (por defecto 'stripe')
+        metodo_pago = request.data.get('metodo_pago', 'stripe')
+        
+        # Crear la compra
+        compra = Compra.objects.create(
+            usuario=request.user,
+            total=total,
+            metodo_pago=metodo_pago
+        )
+        
+        # Crear items de compra y actualizar stock
+        for item in carrito_items:
+            CompraItem.objects.create(
+                compra=compra,
+                producto=item.producto,
+                cantidad=item.cantidad,
+                precio_unitario=item.producto.precio
+            )
+            # Reducir stock
+            item.producto.stock -= item.cantidad
+            item.producto.save()
+        
+        # Eliminar items del carrito
+        carrito_items.delete()
+        
+        # Serializar y retornar la compra
+        serializer = CompraSerializer(compra)
         return Response({
-            'message': 'Funcionalidad de compra actualmente en desarrollo'
-        }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            'message': 'Compra realizada exitosamente',
+            'compra': serializer.data
+        }, status=status.HTTP_201_CREATED)
+
+
+class CompraViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet para ver historial de compras"""
+    serializer_class = CompraSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = None  # Desactivar paginación para compras
+    
+    def get_queryset(self):
+        """Solo mostrar compras del usuario autenticado"""
+        if not self.request.user.is_authenticated:
+            return Compra.objects.none()
+        return Compra.objects.filter(usuario=self.request.user).prefetch_related('items__producto').order_by('-fecha_compra')
+
+
+@api_view(['GET', 'PUT', 'PATCH'])
+@permission_classes([IsAuthenticated])
+def perfil_usuario(request):
+    """Obtener o actualizar perfil del usuario autenticado"""
+    user = request.user
+    
+    if request.method == 'GET':
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+    
+    elif request.method in ['PUT', 'PATCH']:
+        serializer = UserUpdateSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            # Actualizar el token si el username cambió
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'user': UserSerializer(user).data,
+                'access': str(refresh.access_token),
+                'message': 'Perfil actualizado correctamente'
+            }, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def cambiar_password(request):
+    """Cambiar contraseña del usuario autenticado"""
+    user = request.user
+    serializer = ChangePasswordSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        # Verificar contraseña actual
+        if not user.check_password(serializer.validated_data['old_password']):
+            return Response(
+                {'old_password': ['La contraseña actual es incorrecta.']},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Establecer nueva contraseña
+        user.set_password(serializer.validated_data['new_password'])
+        user.save()
+        
+        return Response(
+            {'message': 'Contraseña actualizada correctamente'},
+            status=status.HTTP_200_OK
+        )
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def list(self, request, *args, **kwargs):
+        """Sobrescribir list para asegurar que siempre devuelva una lista"""
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

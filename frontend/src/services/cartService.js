@@ -57,9 +57,11 @@ export const getCarritoTotal = async () => {
   return response.data;
 };
 
-export const checkout = async () => {
-  const sessionKey = getSessionKey();
-  const response = await api.post('/carrito/checkout/', {}, { params: { session_key: sessionKey } });
+export const checkout = async (metodoPago = 'stripe') => {
+  // El checkout ahora requiere autenticación y crea una compra
+  const response = await api.post('/carrito/checkout/', {
+    metodo_pago: metodoPago
+  });
   return response.data;
 };
 

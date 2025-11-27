@@ -69,3 +69,57 @@ class CarritoItem(models.Model):
     @property
     def subtotal(self):
         return self.producto.precio * self.cantidad
+
+
+class Compra(models.Model):
+    """Modelo para guardar las compras realizadas por los usuarios"""
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='compras')
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+    fecha_compra = models.DateTimeField(auto_now_add=True)
+    estado = models.CharField(
+        max_length=20,
+        choices=[
+            ('pendiente', 'Pendiente'),
+            ('completada', 'Completada'),
+            ('cancelada', 'Cancelada'),
+        ],
+        default='completada'
+    )
+    metodo_pago = models.CharField(
+        max_length=50,
+        default='stripe',
+        help_text="Método de pago utilizado"
+    )
+    
+    class Meta:
+        ordering = ['-fecha_compra']
+        verbose_name = 'Compra'
+        verbose_name_plural = 'Compras'
+    
+    def __str__(self):
+        return f"Compra #{self.id} - {self.usuario.username} - ${self.total}"
+    
+    @property
+    def total_items(self):
+        return sum(item.cantidad for item in self.items.all())
+
+
+class CompraItem(models.Model):
+    """Items individuales de una compra"""
+    compra = models.ForeignKey(Compra, on_delete=models.CASCADE, related_name='items')
+    producto = models.ForeignKey(Producto, on_delete=models.PROTECT)
+    cantidad = models.IntegerField()
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, help_text="Precio al momento de la compra")
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    class Meta:
+        verbose_name = 'Item de Compra'
+        verbose_name_plural = 'Items de Compra'
+    
+    def __str__(self):
+        return f"{self.compra} - {self.producto.nombre} x{self.cantidad}"
+    
+    def save(self, *args, **kwargs):
+        # Calcular subtotal automáticamente
+        self.subtotal = self.precio_unitario * self.cantidad
+        super().save(*args, **kwargs)

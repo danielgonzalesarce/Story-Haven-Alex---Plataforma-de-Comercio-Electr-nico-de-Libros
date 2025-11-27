@@ -27,12 +27,24 @@ const Navbar = () => {
     loadCategorias();
     updateFavoritosCount();
     updateCarritoCount();
-    // Actualizar contadores cada vez que cambie el localStorage o se actualice el carrito
+    
+    // Escuchar evento personalizado cuando se actualiza el carrito
+    const handleCarritoUpdate = () => {
+      updateCarritoCount();
+    };
+    
+    window.addEventListener('carritoUpdated', handleCarritoUpdate);
+    
+    // Actualizar contadores periódicamente (cada 2 segundos)
     const interval = setInterval(() => {
       updateFavoritosCount();
       updateCarritoCount();
-    }, 1000);
-    return () => clearInterval(interval);
+    }, 2000);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('carritoUpdated', handleCarritoUpdate);
+    };
   }, []);
 
   const loadCategorias = async () => {
@@ -189,11 +201,29 @@ const Navbar = () => {
                   <i className="fas fa-user-circle me-1"></i>
                   {user?.username || 'Usuario'}
                 </a>
-                <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <ul className="dropdown-menu dropdown-menu-end user-dropdown-menu" aria-labelledby="userDropdown">
+                  <li className="user-dropdown-header">
+                    <div className="user-dropdown-avatar">
+                      {user?.username ? user.username.substring(0, 2).toUpperCase() : 'U'}
+                    </div>
+                    <div className="user-dropdown-info">
+                      <strong>{user?.username || 'Usuario'}</strong>
+                      <small className="text-muted d-block">{user?.email || ''}</small>
+                    </div>
+                  </li>
+                  <li><hr className="dropdown-divider" /></li>
                   <li>
-                    <span className="dropdown-item-text">
-                      <small className="text-muted">Bienvenido, {user?.username || 'Usuario'}</small>
-                    </span>
+                    <Link className="dropdown-item" to="/perfil">
+                      <i className="fas fa-user me-2"></i>Mi Perfil
+                    </Link>
+                  </li>
+                  <li>
+                    <Link className="dropdown-item" to="/favoritos">
+                      <i className="fas fa-heart me-2"></i>Mis Favoritos
+                      {totalFavoritos > 0 && (
+                        <span className="badge bg-danger rounded-pill ms-2">{totalFavoritos}</span>
+                      )}
+                    </Link>
                   </li>
                   <li><hr className="dropdown-divider" /></li>
                   <li>

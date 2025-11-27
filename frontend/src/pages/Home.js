@@ -200,37 +200,6 @@ const Home = () => {
       </section>
       )}
 
-      {/* Historia Section - Solo mostrar si no hay categoría seleccionada */}
-      {!categoriaId && (
-        <section className="historia-section py-5">
-        <div className="container">
-          <div className="row justify-content-center">
-            <div className="col-lg-8 text-center">
-              <h2 className="section-title mb-4">Nuestra Historia</h2>
-              <div className="historia-content">
-                <p className="lead">
-                  Story Haven Alex nació de la pasión por compartir historias que inspiran, 
-                  emocionan y transforman. Somos más que una librería; somos un refugio para 
-                  los amantes de la lectura, un lugar donde cada libro encuentra a su lector 
-                  y cada lector encuentra su próxima aventura.
-                </p>
-                <p>
-                  Desde clásicos literarios hasta los últimos lanzamientos de mangas, 
-                  desde novelas gráficas que desafían la imaginación hasta cómics que 
-                  capturan la esencia de nuestros héroes favoritos. En Story Haven Alex, 
-                  creemos que cada historia merece ser contada y cada lector merece encontrar 
-                  exactamente lo que busca.
-                </p>
-                <p className="mb-0">
-                  Únete a nuestra comunidad de lectores apasionados y descubre por qué 
-                  decimos que aquí, cada página es una puerta a otro mundo.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      )}
 
       {/* Productos Destacados - Solo mostrar si no hay categoría seleccionada */}
       {!categoriaId && (
