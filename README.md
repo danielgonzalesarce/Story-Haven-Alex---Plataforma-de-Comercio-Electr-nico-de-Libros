@@ -6,15 +6,32 @@
 [![Django](https://img.shields.io/badge/Django-5.2.8-green.svg)](https://www.djangoproject.com/)
 [![DRF](https://img.shields.io/badge/DRF-3.16.1-red.svg)](https://www.django-rest-framework.org/)
 
-Una plataforma de comercio electrónico completa (full-stack) para una librería online, desarrollada con Django REST Framework en el backend y React en el frontend.
+> **Story Haven Alex** — Plataforma e-commerce full-stack de libros con backend Django REST Framework y frontend React, diseñada para demostrar habilidades profesionales en desarrollo web moderno, autenticación JWT, gestión de estado, API RESTful y diseño responsive.
 
-🔗 **Repositorio:** [GitHub](https://github.com/danielgonzalesarce/Story-Haven-Alex---Plataforma-de-Comercio-Electr-nico-de-Libros)
+🔗 **Repositorio:** [GitHub](https://github.com/danielgonzalesarce/Story-Haven-Alex---Plataforma-de-Comercio-Electr-nico-de-Libros) | 📸 **Demo:** [Próximamente](#-demo-en-vivo)
+
+---
+
+## 🚀 Highlights / Características Destacadas
+
+- 🔐 **Autenticación JWT** — Sistema seguro de autenticación con tokens de acceso y refresh
+- 🛒 **Carrito Inteligente** — Funciona para usuarios registrados (BD) e invitados (localStorage)
+- 📡 **API RESTful** — Backend completo con Django REST Framework, serializers y permisos
+- ⚛️ **React Moderno** — Hooks, React Query, routing con React Router DOM
+- 🎨 **Diseño Responsive** — Mobile-first con Bootstrap 5, optimizado para todos los dispositivos
+- 💳 **Sistema de Compras** — Checkout completo con historial de pedidos y gestión de estados
+- 🔍 **Búsqueda Avanzada** — Filtros por categoría, precio, nombre/autor con paginación
+- 📚 **CRUD Completo** — Gestión de productos, categorías, carrito y compras
+
+**Stack Tecnológico:** Python | Django | Django REST Framework | React | JWT | SQLite | Bootstrap | Axios | React Query
 
 ---
 
 ## 📋 Tabla de Contenidos
 
+- [Highlights](#-highlights--características-destacadas)
 - [Descripción](#-descripción)
+- [Demo en Vivo](#-demo-en-vivo)
 - [Características Principales](#-características-principales)
 - [Tecnologías Utilizadas](#️-tecnologías-utilizadas)
 - [Estructura del Proyecto](#-estructura-del-proyecto)
@@ -27,6 +44,7 @@ Una plataforma de comercio electrónico completa (full-stack) para una librería
 - [Desarrollo](#-desarrollo)
 - [Pruebas](#-pruebas)
 - [Despliegue](#-despliegue)
+- [Aprendizajes y Retos](#-aprendizajes-y-retos)
 - [Contribuciones](#-contribuciones)
 - [Licencia](#-licencia)
 - [Autor](#-autor)
@@ -36,6 +54,30 @@ Una plataforma de comercio electrónico completa (full-stack) para una librería
 ## 🎯 Descripción
 
 **Story Haven Alex** es una aplicación web moderna y completa que permite a los usuarios explorar, buscar y comprar libros, mangas, novelas gráficas y cómics. La plataforma ofrece una experiencia de usuario fluida con un sistema robusto de autenticación, gestión de carrito de compras, historial de pedidos y mucho más.
+
+Este proyecto demuestra competencias en desarrollo full-stack, integrando un backend robusto con Django REST Framework y un frontend moderno con React, implementando mejores prácticas de desarrollo web, seguridad y experiencia de usuario.
+
+---
+
+## 🌐 Demo en Vivo
+
+> 💡 **Nota:** La demo en vivo estará disponible próximamente. Mientras tanto, puedes clonar el repositorio y seguir las [instrucciones de instalación](#-instalación) para ejecutar el proyecto localmente.
+
+**Próximamente:**
+- 🚀 Demo desplegada en producción
+- 📸 Capturas de pantalla de las funcionalidades principales
+- 🎥 Video demostrativo del proyecto
+
+**Para probar localmente:**
+```bash
+git clone https://github.com/danielgonzalesarce/Story-Haven-Alex---Plataforma-de-Comercio-Electr-nico-de-Libros.git
+cd Story-Haven-Alex---Plataforma-de-Comercio-Electr-nico-de-Libros
+# Sigue las instrucciones de instalación más abajo
+```
+
+---
+
+## 📖 Descripción Detallada
 
 ### ¿Por qué Story Haven Alex?
 
@@ -136,34 +178,37 @@ Una plataforma de comercio electrónico completa (full-stack) para una librería
 
 ## 🛠️ Tecnologías Utilizadas
 
+> 💡 **Palabras clave para ATS/CV**: Python, Django, Django REST Framework, React, JavaScript, REST API, JWT, SQLite, Bootstrap, Git, Full-Stack Development, CRUD, Authentication, State Management
+
 ### Backend
 
-| Tecnología | Versión | Propósito |
-|------------|---------|-----------|
-| **Python** | 3.8+ | Lenguaje de programación |
-| **Django** | 5.2.8 | Framework web |
-| **Django REST Framework** | 3.16.1 | API RESTful |
-| **djangorestframework-simplejwt** | 5.5.1 | Autenticación JWT |
-| **django-cors-headers** | 4.9.0 | Configuración CORS |
-| **SQLite** | - | Base de datos (desarrollo) |
+| Tecnología | Versión | Propósito | Habilidad Demostrada |
+|------------|---------|-----------|---------------------|
+| **Python** | 3.8+ | Lenguaje de programación | Programación orientada a objetos, manejo de datos |
+| **Django** | 5.2.8 | Framework web | Framework MVC, ORM, administración |
+| **Django REST Framework** | 3.16.1 | API RESTful | APIs REST, serializers, viewsets |
+| **djangorestframework-simplejwt** | 5.5.1 | Autenticación JWT | Seguridad, tokens, autenticación |
+| **django-cors-headers** | 4.9.0 | Configuración CORS | Configuración de servidor, seguridad |
+| **SQLite** | - | Base de datos (desarrollo) | Bases de datos relacionales, SQL |
 
 ### Frontend
 
-| Tecnología | Versión | Propósito |
-|------------|---------|-----------|
-| **React** | 19.2.0 | Biblioteca UI |
-| **React Router DOM** | 7.9.5 | Enrutamiento |
-| **Axios** | 1.13.2 | Cliente HTTP |
-| **Bootstrap** | 5.3.8 | Framework CSS |
-| **@tanstack/react-query** | 5.90.10 | Gestión de estado del servidor |
-| **React Scripts** | 5.0.1 | Build tools |
+| Tecnología | Versión | Propósito | Habilidad Demostrada |
+|------------|---------|-----------|---------------------|
+| **React** | 19.2.0 | Biblioteca UI | Componentes, hooks, estado |
+| **React Router DOM** | 7.9.5 | Enrutamiento | SPA, navegación, rutas protegidas |
+| **Axios** | 1.13.2 | Cliente HTTP | Peticiones HTTP, interceptors |
+| **Bootstrap** | 5.3.8 | Framework CSS | Diseño responsive, UI components |
+| **@tanstack/react-query** | 5.90.10 | Gestión de estado del servidor | Caché, sincronización, optimización |
+| **React Scripts** | 5.0.1 | Build tools | Build, desarrollo, producción |
 
 ### Herramientas de Desarrollo
 
-- **Git** - Control de versiones
+- **Git** - Control de versiones (GitHub, branching, commits)
 - **npm/yarn** - Gestión de paquetes Node.js
 - **pip** - Gestión de paquetes Python
 - **venv** - Entornos virtuales Python
+- **VS Code / IDE** - Desarrollo y debugging
 
 ---
 
@@ -550,27 +595,42 @@ POST /api/carrito/
 
 ## 📸 Capturas de Pantalla
 
-> 💡 **Nota**: Las capturas de pantalla se pueden agregar aquí mostrando las diferentes secciones de la aplicación.
+> 💡 **Nota**: Las capturas de pantalla se agregarán próximamente. Mientras tanto, puedes ejecutar el proyecto localmente para ver todas las funcionalidades.
 
-### Página de Inicio
+### Secciones Principales
+
+#### 🏠 Página de Inicio
 - Hero section con llamada a la acción
-- Sección de historia
-- Productos destacados
+- Sección de historia de la tienda
+- Productos destacados con animaciones
 
-### Catálogo de Productos
-- Vista de grid de productos
-- Filtros laterales
-- Búsqueda en tiempo real
+#### 📚 Catálogo de Productos
+- Vista de grid responsive de productos
+- Filtros laterales interactivos (categoría, precio)
+- Búsqueda en tiempo real por nombre/autor
+- Paginación y ordenamiento
 
-### Detalle de Producto
+#### 📖 Detalle de Producto
 - Imagen grande del producto
-- Información completa
+- Información completa y contraportada
 - Botones de acción (añadir al carrito, favoritos)
+- Diseño responsive optimizado
 
-### Carrito de Compras
-- Lista de productos
-- Resumen de totales
-- Botón de checkout
+#### 🛒 Carrito de Compras
+- Lista de productos con cantidades editables
+- Resumen de totales en tiempo real
+- Botón de checkout funcional
+- Persistencia para usuarios invitados y autenticados
+
+#### 🔐 Autenticación
+- Páginas de Login y Registro con validación
+- Manejo seguro de tokens JWT
+- Protección de rutas privadas
+
+#### 📋 Historial de Compras
+- Lista completa de compras realizadas
+- Detalles de cada compra (items, precios, fechas)
+- Estados de compra visibles
 
 ---
 
@@ -689,6 +749,65 @@ npm run build
 
 ---
 
+## 🎓 Aprendizajes y Retos
+
+### Lo que aprendí desarrollando este proyecto:
+
+#### Backend (Django REST Framework)
+- ✅ **Arquitectura RESTful**: Diseño de APIs RESTful siguiendo mejores prácticas
+- ✅ **Autenticación JWT**: Implementación de autenticación segura con tokens de acceso y refresh
+- ✅ **Serializers DRF**: Validación y transformación de datos con serializers personalizados
+- ✅ **Permisos y Autenticación**: Control de acceso por endpoint según el tipo de usuario
+- ✅ **Modelos Relacionales**: Diseño de modelos con relaciones ForeignKey y constraints únicos
+- ✅ **Migraciones**: Gestión de cambios en la base de datos con migraciones de Django
+- ✅ **CORS**: Configuración de CORS para comunicación entre frontend y backend
+- ✅ **Comandos personalizados**: Creación de comandos Django para poblar datos de ejemplo
+
+#### Frontend (React)
+- ✅ **React Hooks**: Uso de useState, useEffect, useContext para gestión de estado
+- ✅ **React Query**: Implementación de React Query para gestión de estado del servidor y caché
+- ✅ **React Router**: Navegación con React Router DOM y protección de rutas
+- ✅ **Axios**: Configuración de cliente HTTP con interceptors para tokens JWT
+- ✅ **Bootstrap 5**: Diseño responsive con sistema de grid y componentes de Bootstrap
+- ✅ **Manejo de Estado**: Gestión de estado local y global (localStorage, React Query)
+- ✅ **Error Handling**: Implementación de ErrorBoundary y manejo de errores de API
+- ✅ **UX/UI**: Diseño de interfaces modernas con animaciones y transiciones suaves
+
+#### Integración Full-Stack
+- ✅ **Comunicación API**: Integración completa entre frontend React y backend Django
+- ✅ **Autenticación Flujo Completo**: Implementación del flujo completo de registro, login y logout
+- ✅ **Carrito Dual**: Sistema de carrito que funciona para usuarios autenticados e invitados
+- ✅ **Gestión de Tokens**: Manejo seguro de tokens JWT en el frontend con refresh automático
+
+#### Retos Técnicos Resueltos
+1. **Carrito para Invitados**: Implementación de carrito persistente usando localStorage y sincronización con backend al autenticarse
+2. **Autenticación JWT**: Manejo de tokens expirados y refresh automático sin interrumpir la experiencia del usuario
+3. **Filtros Avanzados**: Implementación de filtros combinados (categoría, precio, búsqueda) con actualización en tiempo real
+4. **Gestión de Estado**: Optimización del estado del carrito usando React Query para evitar re-renders innecesarios
+5. **Diseño Responsive**: Adaptación completa del diseño para móviles, tablets y desktop
+6. **Validación de Formularios**: Implementación de validación tanto en frontend como backend
+
+#### Habilidades Desarrolladas
+- 🎯 **Resolución de Problemas**: Identificación y solución de bugs complejos
+- 📚 **Documentación**: Creación de documentación completa y clara
+- 🔧 **Debugging**: Uso de herramientas de desarrollo para depuración
+- 🏗️ **Arquitectura**: Diseño de arquitectura escalable y mantenible
+- ⚡ **Optimización**: Mejora de rendimiento y experiencia de usuario
+- 🧪 **Testing**: Preparación del proyecto para implementación de tests
+
+### Valor Agregado del Proyecto
+
+Este proyecto demuestra competencias profesionales en:
+- **Desarrollo Full-Stack**: Capacidad para trabajar tanto en backend como frontend
+- **APIs RESTful**: Conocimiento profundo de diseño e implementación de APIs REST
+- **Autenticación y Seguridad**: Implementación de sistemas de autenticación seguros
+- **Gestión de Estado**: Manejo eficiente del estado en aplicaciones React complejas
+- **Diseño Responsive**: Creación de interfaces que funcionan en todos los dispositivos
+- **Buenas Prácticas**: Código limpio, documentado y siguiendo estándares de la industria
+- **Git y Control de Versiones**: Uso profesional de Git para gestión de código
+
+---
+
 ## 🤝 Contribuciones
 
 Las contribuciones son bienvenidas. Por favor sigue estos pasos:
@@ -769,8 +888,35 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 
 **Daniel Gonzales Arce**
 
-- GitHub: [@danielgonzalesarce](https://github.com/danielgonzalesarce)
-- Repositorio: [Story Haven Alex](https://github.com/danielgonzalesarce/Story-Haven-Alex---Plataforma-de-Comercio-Electr-nico-de-Libros)
+Desarrollador Full-Stack con experiencia en Python, Django, React y tecnologías web modernas. Este proyecto forma parte de mi portafolio profesional y demuestra mis habilidades en desarrollo web completo.
+
+### 📧 Contacto y Enlaces
+
+- 🔗 **GitHub**: [@danielgonzalesarce](https://github.com/danielgonzalesarce)
+- 📚 **Repositorio**: [Story Haven Alex](https://github.com/danielgonzalesarce/Story-Haven-Alex---Plataforma-de-Comercio-Electr-nico-de-Libros)
+
+### 💼 Rol en el Proyecto
+
+Como desarrollador principal de este proyecto, fui responsable de:
+
+- **Arquitectura y Diseño**: Diseño de la arquitectura completa del sistema (backend + frontend)
+- **Backend Development**: Desarrollo completo del API RESTful con Django REST Framework
+- **Frontend Development**: Implementación de la interfaz de usuario con React
+- **Base de Datos**: Diseño e implementación de modelos de datos relacionales
+- **Autenticación**: Implementación del sistema de autenticación JWT completo
+- **UX/UI Design**: Diseño de la interfaz de usuario responsive y moderna
+- **Integración**: Integración completa entre frontend y backend
+- **Documentación**: Creación de documentación técnica completa
+- **Testing y Debugging**: Resolución de problemas y optimización del código
+
+### 🎯 Objetivos del Proyecto
+
+Este proyecto fue desarrollado con el objetivo de:
+- Demostrar competencias en desarrollo full-stack
+- Aplicar mejores prácticas de desarrollo web moderno
+- Crear un portafolio profesional de calidad
+- Aprender y dominar tecnologías demandadas en la industria
+- Resolver problemas reales de desarrollo de software
 
 ---
 
